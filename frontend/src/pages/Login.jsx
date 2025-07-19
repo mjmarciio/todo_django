@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isRegister, setIsRegister] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async e => {
@@ -16,16 +17,32 @@ function Login() {
       });
       localStorage.setItem('access', res.data.access);
       localStorage.setItem('refresh', res.data.refresh);
-      navigate('/');
+      navigate('/tasks');
     } catch (err) {
       alert('Usuário ou senha inválidos!');
     }
   };
 
+  const handleRegister = async e => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:8000/api/register/', {
+        username,
+        password,
+      });
+      alert('Conta criada com sucesso! Faça login.');
+      setIsRegister(false);
+      setUsername('');
+      setPassword('');
+    } catch (err) {
+      alert('Erro ao criar conta. Tente outro nome de usuário.');
+    }
+  };
+
   return (
     <div style={styles.container}>
-      <form onSubmit={handleLogin} style={styles.form}>
-        <h2 style={styles.title}>Entrar</h2>
+      <form onSubmit={isRegister ? handleRegister : handleLogin} style={styles.form}>
+        <h2 style={styles.title}>{isRegister ? 'Criar Conta' : 'Entrar'}</h2>
         <input
           style={styles.input}
           placeholder="Usuário"
@@ -39,7 +56,32 @@ function Login() {
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
-        <button type="submit" style={styles.button}>Login</button>
+        <button type="submit" style={styles.button}>
+          {isRegister ? 'Cadastrar' : 'Login'}
+        </button>
+        <p style={{ marginTop: '20px', textAlign: 'center' }}>
+          {isRegister ? (
+            <>
+              Já tem conta?{' '}
+              <span
+                style={{ color: '#667eea', cursor: 'pointer' }}
+                onClick={() => setIsRegister(false)}
+              >
+                Entrar
+              </span>
+            </>
+          ) : (
+            <>
+              Não tem conta?{' '}
+              <span
+                style={{ color: '#667eea', cursor: 'pointer' }}
+                onClick={() => setIsRegister(true)}
+              >
+                Criar Conta
+              </span>
+            </>
+          )}
+        </p>
       </form>
     </div>
   );
